@@ -48,6 +48,12 @@ def login_page():
 def register_page():
     return render_template('register.html')
 
+# --- THIS IS THE NEW ROUTE YOU WERE MISSING ---
+@app.route('/demo-dashboard')
+def demo_dashboard():
+    return render_template('demo_dashboard.html')
+# --- END OF NEW ROUTE ---
+
 
 # --- API Endpoints for Form Submissions ---
 
@@ -167,5 +173,3 @@ def get_latest_report():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
- 

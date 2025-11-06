@@ -177,6 +177,37 @@
         background: #444;
     }
 
+    /* --- NEW: Button styling for camera/upload --- */
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+    }
+    .button-group button {
+        flex: 1;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .button-group .btn-upload {
+        background: #333;
+        color: #fff;
+    }
+    .button-group .btn-upload:hover {
+        background: #444;
+    }
+    .button-group .btn-camera {
+        background: #00d9cc;
+        color: #000;
+    }
+    .button-group .btn-camera:hover {
+        box-shadow: 0 0 10px #00d9cc;
+    }
+    /* --- END NEW --- */
 
     button.submit-btn {
       width: 100%;
@@ -229,43 +260,94 @@
         margin-top: 15px;
         font-weight: 600;
     }
+
+    /* --- NEW: Camera Modal Styles --- */
+    #camera-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: none; /* Hidden by default */
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 10px;
+    }
+    
+    #video-feed {
+        border-radius: 8px;
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        border: 2px solid #444;
+    }
+    #camera-controls {
+        display: flex;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    #snap-btn {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: #fff;
+        border: 5px solid #00d9cc;
+        cursor: pointer;
+    }
+    #cancel-btn {
+        background: #ff4d4d;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    /* --- END NEW --- */
+
   </style>
 </head>
 <body>
-  <!-- FIXED: Changed link to root "/" to go home -->
   <div class="home-button-wrapper">
-    <a href="/" class="home-button">Home</a>
+    <a href="{{ url_for('index') }}" class="home-button">Home</a>
   </div>
 
   <div class="page-wrapper">
     <main class="container">
       <nav class="nav-links">
-        <!-- FIXED: Changed href to use Flask routes -->
-        <a href="/teacher" class="active">Teacher</a>
-        <a href="/student">Student</a>
+        <a href="{{ url_for('teacher_page') }}" class="active">Teacher</a>
+        <a href="{{ url_for('student_page') }}">Student</a>
       </nav>
       <h2>Teacher Details</h2>
-      <!-- ADDED: id="teacherForm" to the form -->
       <form id="teacherForm">
         <div class="input-group">
           <label for="teacherName">Full Name</label>
-          <!-- ADDED: id and name attributes -->
           <input type="text" id="teacherName" name="teacherName" placeholder="Enter your name" required />
         </div>
         <div class="input-group">
           <label for="instituteName">Institute Name</label>
-          <!-- ADDED: id and name attributes -->
           <input type="text" id="instituteName" name="instituteName" placeholder="Enter institute name" required />
         </div>
         <div class="input-group">
           <label for="subject">Subject</label>
-          <!-- ADDED: id and name attributes -->
           <input type="text" id="subject" name="subject" placeholder="Enter subject" required />
         </div>
+
         <div class="input-group">
-          <label for="classImage">Upload Class Image</label>
-          <!-- ADDED: id and name attributes -->
-          <input type="file" id="classImage" name="classImage" accept="image/*" required />
+            <label>Upload Class Image</label>
+            <div class="button-group">
+                <button type="button" id="take-photo-btn" class="btn-camera">Take Photo</button>
+                <button type="button" id="upload-photo-btn" class="btn-upload">Upload Photo</button>
+            </div>
+            <input type="file" id="classImage" name="classImage" accept="image/*" class="hidden" style="display: none;">
+        </div>
+
+        <div class="input-group" id="preview-container" style="display: none;">
+            <label>Image Preview</label>
+            <img id="image-preview" class="w-full" style="border-radius: 8px; border: 2px solid #444; max-width: 100%;" alt="Image Preview">
         </div>
         <p id="errorMessage" class="error-message"></p>
         <button type="submit" class="submit-btn">Submit Details</button>
@@ -280,101 +362,217 @@
     </section>
   </div>
 
-<!-- ADDED: The entire JavaScript block from your working file -->
+<div id="camera-modal">
+    <video id="video-feed" autoplay playsinline></video>
+    <div id="camera-controls">
+        <button type="button" id="snap-btn" title="Snap Photo"></button>
+        <button type="button" id="cancel-btn">Cancel</button>
+    </div>
+</div>
+<canvas id="canvas" style="display: none;"></canvas>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const teacherForm = document.getElementById('teacherForm');
-        const errorMessage = document.getElementById('errorMessage');
-        const runAttendanceBtn = document.getElementById('runAttendanceBtn');
-        const resultsContainer = document.getElementById('resultsContainer');
+  document.addEventListener('DOMContentLoaded', () => {
+    // --- Original Elements ---
+    const teacherForm = document.getElementById('teacherForm');
+    const errorMessage = document.getElementById('errorMessage');
+    const runAttendanceBtn = document.getElementById('runAttendanceBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const submitBtn = teacherForm.querySelector('.submit-btn');
 
-        // --- Handle Teacher Form Submission ---
-        teacherForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const formData = new FormData(teacherForm);
-            
-            // Show a submitting state
-            const submitBtn = teacherForm.querySelector('.submit-btn');
-            submitBtn.textContent = 'Submitting...';
-            submitBtn.disabled = true;
-            errorMessage.textContent = '';
+    // --- NEW: Camera Elements ---
+    const takePhotoBtn = document.getElementById('take-photo-btn');
+    const uploadPhotoBtn = document.getElementById('upload-photo-btn');
+    const fileInput = document.getElementById('classImage');
+    const imagePreview = document.getElementById('image-preview');
+    const previewContainer = document.getElementById('preview-container');
+    
+    const modal = document.getElementById('camera-modal');
+    const video = document.getElementById('video-feed');
+    const snapBtn = document.getElementById('snap-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const canvas = document.getElementById('canvas');
 
+    let stream;
+    let snappedImageBlob = null; // This will hold the snapped photo file
 
-            fetch('/submit-teacher', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Teacher data saved successfully!');
-                    teacherForm.reset();
-                    errorMessage.textContent = '';
-                } else {
-                    errorMessage.textContent = data.message || 'Failed to save data. Please try again.';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                errorMessage.textContent = 'An error occurred. Check the console.';
-            })
-            .finally(() => {
-                // Restore button state
-                submitBtn.textContent = 'Submit Details';
-                submitBtn.disabled = false;
-            });
-        });
+    // --- NEW: Camera Logic ---
 
-        // --- Handle "Take Attendance" Button Click ---
-        runAttendanceBtn.addEventListener('click', () => {
-            // 1. Show a loading state and disable the button
-            runAttendanceBtn.textContent = 'Processing...';
-            runAttendanceBtn.disabled = true;
-            resultsContainer.style.display = 'block';
-            resultsContainer.textContent = 'Running face recognition. This may take a moment...';
+    // 1. Click "Upload Photo"
+    uploadPhotoBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
 
-            // 2. Call the backend to run the Python script
-            fetch('/run-attendance', {
-                method: 'POST'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    // Handle server errors (like 500)
-                    return response.json().then(err => { throw new Error(err.message || 'Server error'); });
-                }
-                return response.json();
-            })
-            .then(runData => {
-                if (runData.success) {
-                    resultsContainer.textContent = 'Recognition complete. Fetching report...';
-                    
-                    // 3. If the script ran successfully, fetch the latest report
-                    return fetch('/get-latest-report');
-                } else {
-                    // If the script failed, show the error
-                    throw new Error(runData.message || 'The attendance script failed to run.');
-                }
-            })
-            .then(response => response.json())
-            .then(reportData => {
-                // 4. Display the report content
-                if (reportData.success) {
-                    resultsContainer.textContent = reportData.report;
-                } else {
-                    resultsContainer.textContent = `Error: ${reportData.report}`;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                resultsContainer.textContent = `An error occurred: ${error.message}`;
-            })
-            .finally(() => {
-                // 5. Re-enable the button
-                runAttendanceBtn.textContent = 'Take Attendance';
-                runAttendanceBtn.disabled = false;
-            });
+    // 2. Click "Take Photo"
+    takePhotoBtn.addEventListener('click', async () => {
+        modal.style.display = 'flex';
+        try {
+            // Ask for environment (rear) camera
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            video.srcObject = stream;
+        } catch (err) {
+            console.error("Error accessing camera: ", err);
+            // Fallback to any camera if environment fails
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err2) {
+                alert("Could not access camera. Please check permissions.");
+                modal.style.display = 'none';
+            }
+        }
+    });
+
+    // 3. Click "Cancel" in modal
+    cancelBtn.addEventListener('click', () => {
+        closeCamera();
+    });
+
+    // 4. Click "Snap" in modal
+    snapBtn.addEventListener('click', () => {
+        // Draw the video frame to the hidden canvas
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert canvas to a "blob" (like a file) with high quality
+        canvas.toBlob(blob => {
+            snappedImageBlob = blob;
+            imagePreview.src = URL.createObjectURL(blob);
+            previewContainer.style.display = 'block';
+            fileInput.value = ""; // Clear file input in case one was selected
+        }, 'image/jpeg', 0.95); // 95% quality JPEG
+        
+        closeCamera();
+    });
+
+    // 5. When a file is chosen via "Upload Photo"
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            imagePreview.src = URL.createObjectURL(file);
+            previewContainer.style.display = 'block';
+            snappedImageBlob = null; // Clear snapped photo if one existed
+        }
+    });
+
+    // --- Helper Function ---
+    function closeCamera() {
+        modal.style.display = 'none';
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    // --- MODIFIED: Handle Teacher Form Submission ---
+    teacherForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        
+        // 1. Create FormData from the form (gets Name, Institute, Subject)
+        const formData = new FormData(teacherForm);
+        
+        // 2. Show a submitting state
+        submitBtn.textContent = 'Submitting...';
+        submitBtn.disabled = true;
+        errorMessage.textContent = '';
+
+        // 3. Check which image to send
+        if (snappedImageBlob) {
+            // If we snapped a photo, add it to the form data
+            // 'classImage' must match the name attribute of your file input
+            formData.append('classImage', snappedImageBlob, 'snapshot.jpg');
+        
+        } else if (fileInput.files.length > 0) {
+            // If we uploaded a file, it's already in formData
+            // (since we used new FormData(teacherForm))
+        
+        } else {
+            // No image was provided
+            errorMessage.textContent = 'Please take or upload a class image.';
+            submitBtn.textContent = 'Submit Details';
+            submitBtn.disabled = false;
+            return;
+        }
+
+        // 4. Send the form data (with either file or blob) to your Flask server
+        fetch('/submit-teacher', {
+            method: 'POST',
+            body: formData 
+            // Don't set Content-Type, browser does it for FormData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Teacher data saved successfully!');
+                teacherForm.reset();
+                errorMessage.textContent = '';
+                previewContainer.style.display = 'none'; // Hide preview
+                imagePreview.src = ''; // Clear preview src
+                snappedImageBlob = null; // Clear blob
+            } else {
+                errorMessage.textContent = data.message || 'Failed to save data. Please try again.';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            errorMessage.textContent = 'An error occurred. Check the console.';
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.textContent = 'Submit Details';
+            submitBtn.disabled = false;
         });
     });
+
+    // --- Handle "Take Attendance" Button Click (UNMODIFIED) ---
+    runAttendanceBtn.addEventListener('click', () => {
+        // 1. Show a loading state and disable the button
+        runAttendanceBtn.textContent = 'Processing...';
+        runAttendanceBtn.disabled = true;
+        resultsContainer.style.display = 'block';
+        resultsContainer.textContent = 'Running face recognition. This may take a moment...';
+
+        // 2. Call the backend to run the Python script
+        fetch('/run-attendance', {
+            method: 'POST'
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Handle server errors (like 500)
+                return response.json().then(err => { throw new Error(err.message || 'Server error'); });
+            }
+            return response.json();
+        })
+        .then(runData => {
+            if (runData.success) {
+                resultsContainer.textContent = 'Recognition complete. Fetching report...';
+                
+                // 3. If the script ran successfully, fetch the latest report
+                return fetch('/get-latest-report');
+            } else {
+                // If the script failed, show the error
+                throw new Error(runData.message || 'The attendance script failed to run.');
+            }
+        })
+        .then(response => response.json())
+        .then(reportData => {
+            // 4. Display the report content
+            if (reportData.success) {
+                resultsContainer.textContent = reportData.report;
+            } else {
+                resultsContainer.textContent = `Error: ${reportData.report}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            resultsContainer.textContent = `An error occurred: ${error.message}`;
+        })
+        .finally(() => {
+            // 5. Re-enable the button
+            runAttendanceBtn.textContent = 'Take Attendance';
+            runAttendanceBtn.disabled = false;
+        });
+    });
+  });
 </script>
 </body>
 </html>

@@ -116,24 +116,25 @@
                 <h2 class="text-center text-xl font-semibold text-theme-text-light dark:text-gray-400 tracking-wide">
                     Trusted by 30,000+ leading educational institutions worldwide
                 </h2>
+                
                 <div class="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 items-center">
                     <div class="flex justify-center">
-                        <img class="h-16 opacity-70 dark:opacity-60" src="school-logo.png" alt="School Logo">
+                        <img class="h-16 opacity-70 dark:opacity-60" src="{{ url_for('static', filename='school-logo.png') }}" alt="School Logo">
                     </div>
                     <div class="flex justify-center">
-                        <img class="h-16 opacity-70 dark:opacity-60" src="University Logo.jpg" alt="University Logo">
+                        <img class="h-16 opacity-70 dark:opacity-60" src="{{ url_for('static', filename='University Logo.jpg') }}" alt="University Logo">
                     </div>
                     <div class="flex justify-center">
-                        <img class="h-16 opacity-70 dark:opacity-60" src="coaching logo.png" alt="Coaching Logo">
+                        <img class="h-16 opacity-70 dark:opacity-60" src="{{ url_for('static', filename='coaching logo.png') }}" alt="Coaching Logo">
                     </div>
                     <div class="flex justify-center">
-                        <img class="h-16 opacity-70 dark:opacity-60" src="insititue logo.jpg" alt="Institute Logo">
+                        <img class="h-16 opacity-70 dark:opacity-60" src="{{ url_for('static', filename='insititue logo.jpg') }}" alt="Institute Logo">
                     </div>
                     <div class="flex justify-center">
-                        <img class="h-16 opacity-70 dark:opacity-60" src="academy logo.jpg" alt="Academy Logo">
+                        <img class="h-16 opacity-70 dark:opacity-60" src="{{ url_for('static', filename='academy logo.jpg') }}" alt="Academy Logo">
                     </div>
                 </div>
-            </div>
+                </div>
         </div>
 
         <div class="py-16 md:py-24 bg-white dark:bg-gray-900">

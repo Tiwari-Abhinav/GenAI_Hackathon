@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teacher Dashboard</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: #184558;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 32px 8px;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* Grid animation background */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes gridMove {
+      100% {
+        background-position: 100px 100px, 100px 0px;
+      }
+    }
+
+    /* Home button centered */
+    .home-button-wrapper {
+        width: 100%;
+        max-width: 1100px;
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 20px;
+        z-index: 2;
+    }
+
+    .home-button {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid #fff;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 10px 24px;
+        border-radius: 30px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .home-button:hover {
+        background: #fff;
+        color: #000;
+        box-shadow: 0 0 20px #fff;
+    }
+
+    .page-wrapper {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-wrap: wrap; /* Allow wrapping on smaller screens */
+      gap: 30px;
+      justify-content: center;
+      align-items: stretch;
+      z-index: 2;
+    }
+
+    main.container,
+    .attendance-container {
+      background: rgba(20, 20, 40, 0.9);
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+      padding: 24px;
+      flex: 1 1 400px; /* Allow flexible growth and shrinking */
+      min-width: 300px; /* Prevent it from getting too small */
+      color: #fff;
+    }
+
+    nav.nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    nav.nav-links a {
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      padding: 8px 20px;
+      border-radius: 30px;
+      transition: all 0.3s ease;
+    }
+
+    nav.nav-links a:hover,
+    nav.nav-links a.active {
+      color: #000;
+      background: #fff;
+      box-shadow: 0 0 10px #fff;
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.6rem;
+      color: #fff;
+      margin-bottom: 24px;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+    }
+    
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+    }
+
+    label {
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #ccc;
+    }
+
+    input[type="text"],
+    input[type="file"] {
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 2px solid #444;
+      background: #222;
+      color: #fff;
+      font-size: 0.95rem;
+      transition: 0.3s;
+      width: 100%;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #00d9cc;
+      box-shadow: 0 0 10px #00d9cc;
+      background: #111;
+    }
+
+    input::placeholder {
+      color: #888;
+    }
+    
+    /* Custom file input styling */
+    input[type="file"]::file-selector-button {
+        background: #333;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        color: #fff;
+        cursor: pointer;
+        transition: background .2s ease-in-out;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+        background: #444;
+    }
+
+
+    button.submit-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #000;
+      background: linear-gradient(45deg, #00d9cc, #00fff7);
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    button.submit-btn:hover {
+      box-shadow: 0 0 20px #00fff7;
+      transform: scale(1.02);
+    }
+    
+    button.submit-btn:disabled {
+        background: #555;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .attendance-container p {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ccc;
+      line-height: 1.5;
+    }
+
+    #resultsContainer {
+      margin-top: 20px;
+      background: #111;
+      border: 1px solid #444;
+      padding: 15px;
+      border-radius: 8px;
+      color: #eee;
+      display: none; /* Keep it hidden initially */
+      white-space: pre-wrap; /* To respect newlines in the report */
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100px;
+    }
+    .error-message {
+        color: #ff4d4d;
+        text-align: center;
+        margin-top: 15px;
+        font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <!-- FIXED: Changed link to root "/" to go home -->
+  <div class="home-button-wrapper">
+    <a href="/" class="home-button">Home</a>
+  </div>
+
+  <div class="page-wrapper">
+    <main class="container">
+      <nav class="nav-links">
+        <!-- FIXED: Changed href to use Flask routes -->
+        <a href="/teacher" class="active">Teacher</a>
+        <a href="/student">Student</a>
+      </nav>
+      <h2>Teacher Details</h2>
+      <!-- ADDED: id="teacherForm" to the form -->
+      <form id="teacherForm">
+        <div class="input-group">
+          <label for="teacherName">Full Name</label>
+          <!-- ADDED: id and name attributes -->
+          <input type="text" id="teacherName" name="teacherName" placeholder="Enter your name" required />
+        </div>
+        <div class="input-group">
+          <label for="instituteName">Institute Name</label>
+          <!-- ADDED: id and name attributes -->
+          <input type="text" id="instituteName" name="instituteName" placeholder="Enter institute name" required />
+        </div>
+        <div class="input-group">
+          <label for="subject">Subject</label>
+          <!-- ADDED: id and name attributes -->
+          <input type="text" id="subject" name="subject" placeholder="Enter subject" required />
+        </div>
+        <div class="input-group">
+          <label for="classImage">Upload Class Image</label>
+          <!-- ADDED: id and name attributes -->
+          <input type="file" id="classImage" name="classImage" accept="image/*" required />
+        </div>
+        <p id="errorMessage" class="error-message"></p>
+        <button type="submit" class="submit-btn">Submit Details</button>
+      </form>
+    </main>
+
+    <section class="attendance-container">
+      <h2>Attendance</h2>
+      <p>After submitting a class photo, click the button below to run the face recognition and generate the report.</p>
+      <button id="runAttendanceBtn" class="submit-btn">Take Attendance</button>
+      <div id="resultsContainer"></div>
+    </section>
+  </div>
+
+<!-- ADDED: The entire JavaScript block from your working file -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const teacherForm = document.getElementById('teacherForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const runAttendanceBtn = document.getElementById('runAttendanceBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        // --- Handle Teacher Form Submission ---
+        teacherForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(teacherForm);
+            
+            // Show a submitting state
+            const submitBtn = teacherForm.querySelector('.submit-btn');
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+            errorMessage.textContent = '';
+
+
+            fetch('/submit-teacher', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Teacher data saved successfully!');
+                    teacherForm.reset();
+                    errorMessage.textContent = '';
+                } else {
+                    errorMessage.textContent = data.message || 'Failed to save data. Please try again.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = 'An error occurred. Check the console.';
+            })
+            .finally(() => {
+                // Restore button state
+                submitBtn.textContent = 'Submit Details';
+                submitBtn.disabled = false;
+            });
+        });
+
+        // --- Handle "Take Attendance" Button Click ---
+        runAttendanceBtn.addEventListener('click', () => {
+            // 1. Show a loading state and disable the button
+            runAttendanceBtn.textContent = 'Processing...';
+            runAttendanceBtn.disabled = true;
+            resultsContainer.style.display = 'block';
+            resultsContainer.textContent = 'Running face recognition. This may take a moment...';
+
+            // 2. Call the backend to run the Python script
+            fetch('/run-attendance', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Handle server errors (like 500)
+                    return response.json().then(err => { throw new Error(err.message || 'Server error'); });
+                }
+                return response.json();
+            })
+            .then(runData => {
+                if (runData.success) {
+                    resultsContainer.textContent = 'Recognition complete. Fetching report...';
+                    
+                    // 3. If the script ran successfully, fetch the latest report
+                    return fetch('/get-latest-report');
+                } else {
+                    // If the script failed, show the error
+                    throw new Error(runData.message || 'The attendance script failed to run.');
+                }
+            })
+            .then(response => response.json())
+            .then(reportData => {
+                // 4. Display the report content
+                if (reportData.success) {
+                    resultsContainer.textContent = reportData.report;
+                } else {
+                    resultsContainer.textContent = `Error: ${reportData.report}`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultsContainer.textContent = `An error occurred: ${error.message}`;
+            })
+            .finally(() => {
+                // 5. Re-enable the button
+                runAttendanceBtn.textContent = 'Take Attendance';
+                runAttendanceBtn.disabled = false;
+            });
+        });
+    });
+</script>
+</body>
+</html>

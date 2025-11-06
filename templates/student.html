@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Login</title>
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: linear-gradient(135deg, #2c5364, #203a43, #0f2027);
+      overflow: hidden; /* remove scroll */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes gridMove {
+      0% { background-position: 0 0, 0 0; }
+      100% { background-position: 40px 40px, 40px 40px; }
+    }
+
+    main.container {
+      position: relative;
+      background: rgba(20, 20, 40, 0.9);
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+      max-width: 480px;
+      width: 95%;
+      padding: 30px 40px 40px;
+      z-index: 1;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 20px;
+    }
+
+    nav.nav-links {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 10px;
+    }
+
+    nav.nav-links a {
+      text-decoration: none;
+      color: #fff; /* force white */
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 8px 20px;
+      border-radius: 30px;
+      transition: all 0.3s ease;
+    }
+
+    nav.nav-links a.active,
+    nav.nav-links a:hover {
+      color: #000;
+      background: #0ff;
+      box-shadow: 0 0 12px #0ff;
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: 700;
+      font-size: 2rem;
+      color: #fff;
+      margin-bottom: 15px;
+      letter-spacing: 1.2px;
+      text-shadow: 0 0 8px #0ff;
+    }
+
+    form#studentForm {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    label {
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #ccc; 
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="file"] {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 2px solid #444;
+      background: #222;
+      color: #fff;
+      font-size: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="file"]:focus {
+      outline: none;
+      border-color: #0ff;
+      box-shadow: 0 0 8px #0ff;
+      background: #111;
+    }
+
+    p#errorMessage {
+      grid-column: 1 / -1;
+      color: #ff4c4c;
+      font-weight: 600;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+      text-align: center;
+      margin-top: 5px;
+    }
+
+    button.submit-btn {
+      grid-column: 1 / -1;
+      padding: 14px 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff; /* white text */
+      background: transparent;
+      border: 2px solid #0ff;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 10px #0ff;
+      margin-top: 10px;
+    }
+
+    button.submit-btn:hover {
+      color: #000;
+      background: #0ff;
+      box-shadow: 0 0 20px #0ff;
+    }
+    
+    button.submit-btn:disabled {
+        background: #555;
+        border-color: #555;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+  </style>
+</head>
+<body>
+  <main class="container" role="main" aria-label="Student details form">
+    <nav class="nav-links">
+      <!-- FIXED: Links now point to Flask routes -->
+      <a href="/teacher">Teacher</a>
+      <a href="/student" class="active">Student</a>
+    </nav>
+
+    <h2>Student Details</h2>
+
+    <form id="studentForm" novalidate>
+      <div class="input-group">
+        <label for="studentName">Full Name</label>
+        <input type="text" id="studentName" name="studentName" required />
+      </div>
+
+      <div class="input-group">
+        <label for="phoneno">Phone No.</label>
+        <input type="text" id="phoneno" name="phoneno" required />
+      </div>
+
+      <div class="input-group">
+        <label for="rollNo">Roll Number</label>
+        <input type="number" id="rollNo" name="rollNo" required />
+      </div>
+
+      <div class="input-group">
+        <label for="studentImage">Upload Passport Size Image</label>
+        <input type="file" id="studentImage" name="studentImage" accept="image/*" required />
+      </div>
+
+      <p id="errorMessage"></p>
+
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+  </main>
+
+  <!-- FIXED: Replaced redirect script with the working fetch script -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const studentForm = document.getElementById('studentForm');
+      const errorMessage = document.getElementById('errorMessage');
+
+      studentForm.addEventListener('submit', (event) => {
+          event.preventDefault();
+          
+          const formData = new FormData(studentForm);
+          const submitBtn = studentForm.querySelector('.submit-btn');
+          
+          // Show submitting state
+          submitBtn.textContent = 'Submitting...';
+          submitBtn.disabled = true;
+          errorMessage.textContent = '';
+
+
+          // Send the data to your Python server
+          fetch('/submit-student', {
+              method: 'POST',
+              body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  alert('Student data saved successfully!');
+                  studentForm.reset();
+                  errorMessage.textContent = '';
+              } else {
+                  errorMessage.textContent = data.message || 'Failed to save data. Please try again.';
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              errorMessage.textContent = 'An error occurred. Check the console.';
+          })
+          .finally(() => {
+              // Restore button state
+              submitBtn.textContent = 'Submit';
+              submitBtn.disabled = false;
+          });
+      });
+  });
+</script>
+</body>
+</html>

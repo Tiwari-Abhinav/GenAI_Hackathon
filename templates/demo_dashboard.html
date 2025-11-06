@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Attendance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --theme-color: #00d9cc; /* Vibrant Teal */
+            --bg-color: #122a3a; /* Dark Blue */
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-color: #ffffff;
+            --text-color-light: #bbbbbb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animated Grid Background */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes gridMove {
+            100% { background-position: 40px 0, 0 40px; }
+        }
+
+        /* Reusable Glass Effect Class */
+        .glass-effect {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto 30px auto;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 2rem;
+            text-shadow: 0 0 15px var(--theme-color);
+        }
+
+        .home-button {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .home-button:hover {
+            background: var(--theme-color);
+            color: #000;
+            box-shadow: 0 0 20px var(--theme-color);
+        }
+
+        /* Main Dashboard Layout */
+        .dashboard-wrapper {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .chart-container, .stats-container {
+            padding: 25px;
+        }
+
+        h2 {
+            text-align: left;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--theme-color);
+        }
+        
+        /* Doughnut Chart specific */
+        .doughnut-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+        .doughnut-overlay {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--theme-color);
+            text-shadow: 0 0 10px var(--theme-color);
+        }
+
+        /* Student Status List */
+        .stats-container ul {
+            list-style: none;
+            padding-left: 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .stats-container ul li {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 400;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--text-color-light);
+            transition: all 0.3s ease;
+        }
+        .stats-container ul li:hover {
+            transform: translateX(5px);
+            background: rgba(0, 0, 0, 0.4);
+        }
+        .stats-container ul li.present {
+             border-left-color: var(--theme-color);
+        }
+        .stats-container ul li.absent {
+             border-left-color: #ff4d4d;
+        }
+        .stats-container ul li .id-tag {
+            font-size: 0.8rem;
+            color: var(--text-color-light);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Attendance Dashboard (Demo)</h1>
+        <a href="{{ url_for('index') }}" class="home-button">Back to Home</a>
+    </div>
+    
+    <div class="dashboard-wrapper">
+        <div class="left-column">
+            <div class="chart-container glass-effect">
+                <h2>Monthly Attendance (November 2025)</h2>
+                <canvas id="attendanceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="chart-container glass-effect">
+                <h2>Today's Attendance Rate</h2>
+                <div class="doughnut-container">
+                    <div class="doughnut-overlay">83%</div>
+                    <canvas id="rateChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="stats-container glass-effect">
+                <h2>Live Student Status</h2>
+                <ul>
+                    <li class="present">
+                        <span>Abhinav</span>
+                        <span class="id-tag">ID: 1</span>
+                    </li>
+                    <li class="present">
+                        <span>Yoshita</span>
+                        <span class="id-tag">ID: 232</span>
+                    </li>
+                    <li class="present">
+                        <span>Vanshika</span>
+                        <span class="id-tag">ID: 87</span>
+                    </li>
+                    <li class="present">
+                        <span>Sharadha</span>
+                        <span class="id-tag">ID: 258</span>
+                    </li>
+                    <li class="absent">
+                        <span>IDK1</span>
+                        <span class="id-tag">ID: 321</span>
+                    </li>
+                    <li class="present">
+                        <span>IDK2</span>
+                        <span class="id-tag">ID: 82897</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- FAKE DATA FOR THE DEMO ---
+        const studentLabels = ["Abhinav", "Yoshita", "Vanshika", "Sharadha", "IDK1", "IDK2"];
+        const attendanceData = [18, 20, 19, 17, 8, 12]; // Fake attendance days
+        
+        // --- 1. Horizontal Bar Chart (Monthly Attendance) ---
+        const ctxBar = document.getElementById('attendanceChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar', // This will be a horizontal bar chart
+            data: {
+                labels: studentLabels,
+                datasets: [{
+                    label: 'Classes Attended in November',
+                    data: attendanceData,
+                    backgroundColor: 'rgba(0, 217, 204, 0.6)',
+                    borderColor: 'rgba(0, 217, 204, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y', // This makes it horizontal
+                responsive: true,
+                scales: {
+                    y: {
+                        ticks: { color: 'var(--text-color)' },
+                        grid: { color: 'var(--glass-border)' }
+                    },
+                    x: {
+                        ticks: { color: 'var(--text-color)' },
+                        grid: { color: 'var(--glass-border)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false // Hide the legend for a cleaner look
+                    }
+                }
+            }
+        });
+
+        // --- 2. Doughnut Chart (Attendance Rate) ---
+        const ctxDoughnut = document.getElementById('rateChart').getContext('2d');
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Present', 'Absent'],
+                datasets: [{
+                    data: [83, 17], // 83% Present, 17% Absent
+                    backgroundColor: [
+                        'var(--theme-color)',
+                        'rgba(255, 255, 255, 0.1)'
+                    ],
+                    borderColor: 'var(--bg-color)',
+                    borderWidth: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '80%', // Makes it a "thin" doughnut
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

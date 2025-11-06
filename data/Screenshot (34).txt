@@ -1,0 +1,4 @@
+Type: Student
+Name: Abhinav
+Roll No: 22
+Phone No: 45

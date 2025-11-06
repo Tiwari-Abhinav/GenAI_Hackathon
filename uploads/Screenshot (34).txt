@@ -1,4 +1,0 @@
-Type: Teacher
-Name: yosh
-Institute: lu
-Subject: maths

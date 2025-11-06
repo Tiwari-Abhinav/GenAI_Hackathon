@@ -1,0 +1,4 @@
+Type: Student
+Name: Idk2
+Roll No: 82897
+Phone No: 789

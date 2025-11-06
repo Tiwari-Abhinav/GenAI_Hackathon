@@ -1,0 +1,4 @@
+Type: Student
+Name: Sharadha 
+Roll No: 258
+Phone No: 852

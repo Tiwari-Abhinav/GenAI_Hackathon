@@ -3,9 +3,6 @@ import os
 import numpy as np
 import datetime
 
-# --- IMPORTANT: Your whatsapp.py file must be in the same folder ---
-from whatsapp import send_whatsapp_notification 
-
 # --- Configuration ---
 TEACHER_FOLDER = 'uploads'
 STUDENT_FOLDER = 'data'
@@ -56,7 +53,6 @@ def load_known_students(student_folder_path):
     print(f"Loaded {len(known_student_data)} known students.")
     return known_face_encodings, known_student_data
 
-# <<< COPY FROM HERE >>>
 def find_present_students(class_photo_path, known_encodings, known_data):
     """Finds and identifies all known students in the class photo."""
     present_students = []
@@ -68,7 +64,7 @@ def find_present_students(class_photo_path, known_encodings, known_data):
         print(f"Found {len(unknown_face_encodings)} face(s) in the class photo.")
 
         for unknown_encoding in unknown_face_encodings:
-            matches = face_recognition.compare_faces(known_encodings, unknown_encoding, tolerance=0.55)
+            matches = face_recognition.compare_faces(known_encodings, unknown_encoding, tolerance=TOLERANCE)
             face_distances = face_recognition.face_distance(known_encodings, unknown_encoding)
             best_match_index = np.argmin(face_distances)
             
@@ -81,22 +77,9 @@ def find_present_students(class_photo_path, known_encodings, known_data):
                 if matched_student_data not in present_students:
                     present_students.append(matched_student_data)
 
-                    # --- WHATSAPP NOTIFICATION LOGIC ---
-                    student_name = matched_student_data.get('Name')
-                    student_phone = matched_student_data.get('Phone No') 
-                    
-                    if student_name and student_phone:
-                        print(f"SUCCESS: Phone number found for {student_name}. Sending notification...")
-                        # This calls the function in your other file
-                        send_whatsapp_notification(student_name, student_phone, "Data Structures")
-                    else:
-                        print(f"INFO: Notification not sent for {student_name} because phone number was not found in the dictionary.")
-                    # --- END OF WHATSAPP LOGIC ---
-
     except Exception as e:
         print(f"Could not process the class photo. Error: {e}")
     return present_students
-# <<< COPY UNTIL HERE >>>
 
 
 if __name__ == "__main__":
@@ -144,4 +127,3 @@ if __name__ == "__main__":
                 print("No known students were recognized in the photo.")
         else:
             print("No class photo found in the 'uploads' folder.")
-            

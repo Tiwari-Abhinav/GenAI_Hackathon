@@ -1,0 +1,10 @@
+--- Attendance Report (2025-11-06_14-34-45) ---
+Processed from photo: photo_2025-11-06_13-49-31.jpg
+
+Present Students:
+ - Name: Yoshita, Unique ID: 232
+ - Name: IDK1, Unique ID: 321
+ - Name: Sharadha, Unique ID: 258
+ - Name: Idk2, Unique ID: 82897
+ - Name: Vanshika, Unique ID: 87
+ - Name: Abhinav, Unique ID: 1

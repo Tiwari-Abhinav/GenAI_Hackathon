@@ -1,0 +1,4 @@
+Type: Student
+Name: IDK1
+Roll No: 321
+Phone No: 123

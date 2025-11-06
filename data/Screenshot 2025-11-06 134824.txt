@@ -1,0 +1,4 @@
+Type: Student
+Name: Yoshita
+Roll No: 232
+Phone No: 23

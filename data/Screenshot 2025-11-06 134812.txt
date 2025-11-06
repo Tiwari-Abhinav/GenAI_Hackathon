@@ -1,0 +1,4 @@
+Type: Student
+Name: Vanshika 
+Roll No: 87
+Phone No: 89
